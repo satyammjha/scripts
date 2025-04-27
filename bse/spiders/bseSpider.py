@@ -104,10 +104,16 @@ class BseSpider(scrapy.Spider):
         ann = response.meta["announcement"]
         pdf_url = ann["pdf_url"]
 
-        # Extract text (but don't print it)
+    # Extract text (but don't print it)
         text = self.extract_text_from_pdf(response.body, pdf_url)
 
-        # format date/time
+    # If extraction failed, set the failure flag
+        if not text:
+            ann["status"] = "failed"
+        else:
+            ann["status"] = "success"
+
+    # format date/time
         try:
             dt = datetime.fromisoformat(ann["news_date"])
             date_fmt = dt.strftime("%d %b %Y")
@@ -115,16 +121,18 @@ class BseSpider(scrapy.Spider):
         except ValueError:
             date_fmt, time_fmt = ann["news_date"], ""
 
+    # Add the status and other necessary fields for pipeline
         yield {
             "news_id":      ann["news_id"],
             "company":      ann["company_name"],
             "announcement": ann["headline"],
-            "date":         date_fmt,
-            "time":         time_fmt,
-            "company_url":  ann["company_url"],
-            "pdf_url":      pdf_url,
-            "pdf_text":     text.strip(),
-        }
+        "date":         date_fmt,
+        "time":         time_fmt,
+        "company_url":  ann["company_url"],
+        "pdf_url":      pdf_url,
+        "pdf_text":     text.strip() if text else "",
+        "status":       ann["status"],  # Success or failed
+    }
 
     def extract_text_from_pdf(self, pdf_bytes, pdf_url):
         try:
