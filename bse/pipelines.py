@@ -16,7 +16,7 @@ class PdfLinkDedupPipeline:
         self.conn.commit()
 
         # 2) MongoDB setup
-        self.client = MongoClient('mongodb+srv://admin:Wt9cPRsB3eZazNeA@cluster0.hmuzu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0')
+        self.client = MongoClient('') #USE YOUR MONGODB URI HERE
         self.db     = self.client['bse']
         self.col    = self.db['announcements']
 
